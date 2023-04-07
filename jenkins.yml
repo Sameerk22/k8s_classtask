@@ -1,0 +1,31 @@
+pipeline {
+  agent any
+  stages {
+    stage('Sync Repo') {
+      steps {
+        git branch: 'master', url: 'https://github.com/Sameerk22/k8s_classtask.git'
+      }
+    }
+    stage('Build Docker Image') {
+      steps {
+        sh 'docker build -t myimage .'
+      }
+    }
+    
+    stage('Deploy to Minikube') {
+      environment {
+        DOCKER_IMAGE = 'my-image'
+      }
+      steps {
+        sh 'minikube start'
+        sh 'eval $(minikube docker-env)'
+        sh 'kubectl create deployment my-deployment --image=${DOCKER_IMAGE}'
+        sh 'kubectl scale deployment my-deployment --replicas=2'
+       }
+    }
+
+  }
+}
+
+    
+
